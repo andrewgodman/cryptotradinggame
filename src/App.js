@@ -62,6 +62,14 @@ class App extends Component {
       this.getSpotPrice();
     }, 60000);
   }
+  
+  componentDidUpdate(prevProps, prevState) {
+    // only update chart if the data has changed
+    if (prevProps.chartData !== this.state.chartData) {
+      this.getChartPricingData()
+    }
+  }
+
 
   getChartPricingData = () => {
     const url =  "https://min-api.cryptocompare.com/data/"
@@ -81,12 +89,9 @@ class App extends Component {
 
 
   updatePair = (pair) => {
-    console.log(pair)
     this.setState({currentPair : pair})
   }
 
-  
-  
   // handleChange = () => {
 
     // console.log(this.state.updatePair);
