@@ -74,7 +74,7 @@ class App extends Component {
   
   componentDidUpdate(prevProps, prevState) {
     if (prevState.currentPair !== this.state.currentPair) {
-      this.getChartPricingData()
+      this.getChartPricingData(this.state.chartScale)
     }
   }
 
@@ -87,6 +87,7 @@ class App extends Component {
     .then((res) => {
       let pricingData = res.data.Data
       let newChartData = {}
+      console.log(pricingData);      
       pricingData.map((day, index) => {
         newChartData[moment.unix(day.time).format("YYYY-MM-DD HH:mm a")] = day.close
       })

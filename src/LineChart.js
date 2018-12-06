@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import ReactChartkick, { LineChart, PieChart, BarChart, Timeline } from 'react-chartkick'
+import ReactChartkick, { AreaChart, LineChart, PieChart, BarChart, Timeline } from 'react-chartkick'
 import Chart from 'chart.js'
 const axios = require('axios');
 
