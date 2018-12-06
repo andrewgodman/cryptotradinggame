@@ -4,11 +4,13 @@ import './App.css';
 import Charts  from './LineChart'
 import PairSelector from './PairSelector'
 import SpotPrice from './SpotPrice'
+import SelectTimeScale from './SelectTimeScale'
+
 
 const axios = require('axios');
 const moment = require('moment');
 class App extends Component {
-
+  
   constructor(props){
     super(props)
     this.state = {
@@ -18,11 +20,15 @@ class App extends Component {
       topCoins: ["BTC", "ETH", "XRP", "BCH", "EOS"],
       fiatCurrency: ["AUD", "USD", "EUR", "NZD"],
       pairList: [],
-      spotPrice: null
+      spotPrice: null,
+      chartScale: "day"
     }
   }
-
- 
+  
+  changeTimeScale = (scale) => {
+    this.setState({chartScale: scale})
+    this.getChartPricingData(scale)
+  }  
 
   makePairOptions = () => {
     let pair = this.state.pairlst 
@@ -31,13 +37,16 @@ class App extends Component {
 
   generatePairs = () => {
     for (let i = 0; i < this.state.topCoins.length -1 ; i++) {
+      const coin = this.state.topCoins[i];
       for (let n = 0; n < this.state.fiatCurrency.length; n++) {
-        this.state.pairList.push(`${this.state.topCoins[n]}/${this.state.fiatCurrency[n]}`);
-        this.state.pairList.push(`${this.state.fiatCurrency[n]}/${this.state.topCoins[n]}`);
+        const fiat = this.state.fiatCurrency[n];
+        this.state.pairList.push(`${coin}/${fiat}`);
+        this.state.pairList.push(`${fiat}/${coin}`);
       }
       for (let j = i + 1; j < this.state.topCoins.length; j++) {
-        this.state.pairList.push(`${this.state.topCoins[i]}/${this.state.topCoins[j]}`);
-        this.state.pairList.push(`${this.state.topCoins[j]}/${this.state.topCoins[i]}`)
+        const coin2 = this.state.topCoins[j];
+        this.state.pairList.push(`${coin2}/${coin}`);
+        this.state.pairList.push(`${coin}/${coin2}`);
       }
     }
   }
@@ -56,7 +65,7 @@ class App extends Component {
 
   componentDidMount(){
     this.generatePairs()
-    this.getChartPricingData()
+    this.getChartPricingData("day")
     this.getSpotPrice()
     this.interval = setInterval(() => {
       this.getSpotPrice();
@@ -64,54 +73,51 @@ class App extends Component {
   }
   
   componentDidUpdate(prevProps, prevState) {
-    // only update chart if the data has changed
-    if (prevProps.chartData !== this.state.chartData) {
+    if (prevState.currentPair !== this.state.currentPair) {
       this.getChartPricingData()
     }
   }
 
-
-  getChartPricingData = () => {
+  getChartPricingData = (time) => {
     const url =  "https://min-api.cryptocompare.com/data/"
     let split = this.state.currentPair.split("/")
     let FirstSymbol = split[0]
     let LastSymbol = split[1]
-    axios.get(`${url}histoday?fsym=${FirstSymbol}&tsym=${LastSymbol}`)
-      .then((res) => {
-        let pricingData = res.data.Data
-        let newChartData = {}
-        pricingData.map((day, index) => {
-          newChartData[moment.unix(day.time).format("YYYY-MM-DD HH:mm a")] = day.close
+    axios.get(`${url}histo${time}?fsym=${FirstSymbol}&tsym=${LastSymbol}`)
+    .then((res) => {
+      let pricingData = res.data.Data
+      let newChartData = {}
+      pricingData.map((day, index) => {
+        newChartData[moment.unix(day.time).format("YYYY-MM-DD HH:mm a")] = day.close
       })
       this.setState({pricingData, chartData: newChartData})
     })
   }
 
-
   updatePair = (pair) => {
     this.setState({currentPair : pair})
   }
 
-  // handleChange = () => {
-
-    // console.log(this.state.updatePair);
-    
-    // this.state.updatePair(event.target.value)
-    // this.state.getChartPricingData()
-    // this.setState({currentPair: event.target.value})
-  // }
 
   render() {
     return (
       <div className="App">
+        <SelectTimeScale
+          changeTimeScale={this.changeTimeScale}
+        />
         <PairSelector 
           updatePair={this.updatePair} 
-          // makePairOptions={this.makePairOptions} 
           pairList={this.state.pairList} 
-          // currentPair={this.state.currentPair}
+          currentPair={this.state.currentPair}
         />
-        <SpotPrice currentPair={this.state.currentPair} spotPrice={this.state.spotPrice}/>
-        <Charts chartData={this.state.chartData} getChartPricingData={this.getChartPricingData}/>
+        <SpotPrice
+          currentPair={this.state.currentPair}
+          spotPrice={this.state.spotPrice}
+        />
+        <Charts
+          chartData={this.state.chartData}
+          getChartPricingData={this.getChartPricingData}
+        />
       </div>
     );
   }

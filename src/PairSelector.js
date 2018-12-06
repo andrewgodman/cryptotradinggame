@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-const axios = require('axios');
 
 function PairSelector(props) {
   
@@ -9,7 +8,7 @@ function PairSelector(props) {
       name="pair" 
       value={props.currentPair} 
       onChange={(event) => props.updatePair(event.target.value)}>
-      {props.pairList.map((pair) => <option value={pair}>{pair}</option> )}
+      {props.pairList.map((pair, index) => <option key={index} value={pair}>{pair}</option> )}
     </select>
 
   )

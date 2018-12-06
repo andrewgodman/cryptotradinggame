@@ -12,11 +12,20 @@ class Charts extends Component {
     this.state = {
     }
   }
-
+  
   render(){
+    let arr = Object.values(this.props.chartData);
+      let min = Math.min(...arr);
+      let max = Math.max(...arr);
     return(
       <div className="chart">
-          <LineChart data={this.props.chartData} />
+          <LineChart 
+          data={this.props.chartData} 
+          min={min}
+          max={max}
+          curve={false} 
+          
+          />
       </div>
     )
   }
